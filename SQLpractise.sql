@@ -230,3 +230,156 @@ INNER JOIN Person.ContactType c
 GROUP BY b.contacttypeid, c.name
 HAVING COUNT(*) > 100
 ORDER BY 'Number of contacts' DESC;
+
+
+--QUESTION 23
+--From the following table write a query in SQL to retrieve the RateChangeDate, full name (first name, middle name and last name) and weekly salary (40 hours in a week) of employees. 
+--In the output the RateChangeDate should appears in date format. Sort the output in ascending order on NameInFull.
+
+SELECT FORMAT(h.ratechangedate, 'yyyy-MM-dd') AS fromdate, --CAST(h.ratechangedate as VARCHAR(10)) can be used too
+	CONCAT( p.LastName, ', ', p.FirstName,' ', p.MiddleName) AS nameinfull, 
+	h.Rate*40 AS Salaryinweek
+FROM HumanResources.EmployeePayHistory h
+INNER JOIN Person.Person p
+	ON p.BusinessEntityID = h.BusinessEntityID
+ORDER BY nameinfull
+
+
+
+--QUESTION 24
+--From the following tables write a query in SQL to calculate and display the latest weekly salary of each employee. 
+--Return RateChangeDate, full name (first name, middle name and last name) and weekly salary (40 hours in a week) of employees Sort the output in ascending order on NameInFull.
+
+SELECT CONVERT(VARCHAR, CONVERT(DATE,CAST(h.ratechangedate as VARCHAR(11))),23) AS fromdate,
+	CONCAT( p.LastName, ', ', p.FirstName,' ', p.MiddleName) AS nameinfull,
+	h.Rate*40 AS Salaryinweek
+FROM HumanResources.EmployeePayHistory h 
+INNER JOIN Person.Person p
+	ON p.BusinessEntityID = h.BusinessEntityID
+	WHERE h.RateChangeDate = (SELECT MAX(ratechangedate)
+	FROM HumanResources.EmployeePayHistory
+	WHERE BusinessEntityID = h.BusinessEntityID)
+ORDER BY nameinfull
+
+
+
+--QUESTION 25
+--From the following table write a query in SQL to find the sum, average, count, minimum, and maximum order quentity for those orders whose id are 43659 and 43664. 
+--Return SalesOrderID, ProductID, OrderQty, sum, average, count, max, and min order quantity.
+
+SELECT s.SalesOrderID, s.productid, s.orderqty, 
+	SUM(s.OrderQty) OVER( PARTITION BY s.salesorderid) AS total_quantity, 
+	AVG(CAST(s.OrderQty AS FLOAT)) OVER( PARTITION BY s.salesorderid) AS avg_quantity,
+	COUNT(*) OVER( PARTITION BY s.salesorderid) AS count_quantity, 
+	MIN(s.OrderQty) OVER( PARTITION BY s.salesorderid)AS min_quantity, 
+	MAX(s.OrderQty) OVER( PARTITION BY s.salesorderid)AS max_quantity 
+FROM Sales.SalesOrderDetail s
+WHERE s.SalesOrderID IN ('43659','43664')
+
+
+
+--QUESTION 26
+--From the following table write a query in SQL to find the sum, average, and number of order quantity for those orders whose ids are 43659 and 43664 and product id starting with '71'. 
+--Return SalesOrderID, OrderNumber,ProductID, OrderQty, sum, average, and number of order quantity.
+
+SELECT s.SalesOrderID AS ordernumber, s.productid, s.orderqty AS quantity, 
+	SUM(s.orderqty) OVER( ORDER BY s.salesorderid, s.productid) AS total, 
+	AVG(CAST(s.orderqty AS FLOAT)) OVER( PARTITION BY s.salesorderid ORDER BY s.salesorderid, s.productid) AS avg,
+	COUNT(s.orderqty) OVER( ORDER BY s.salesorderid, s.productid ROWS BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) AS count
+FROM Sales.SalesOrderDetail s
+WHERE s.SalesOrderID IN ('43659','43664') AND s.ProductID LIKE '71%';
+
+
+--QUESTION 27
+--From the following table write a query in SQL to retrieve the total cost of each salesorderID that exceeds 100000. Return SalesOrderID, total cost.
+
+SELECT s.SalesOrderID, SUM(s.unitprice*s.OrderQty) AS orderidcost
+FROM Sales.SalesOrderDetail s
+GROUP BY s.SalesOrderID
+HAVING SUM(s.unitprice*s.OrderQty) > 100000;
+
+
+
+--QUESTION 28
+--From the following table write a query in SQL to retrieve products whose names start with 'Lock Washer'. 
+--Return product ID, and name and order the result set in ascending order on product ID column.
+
+SELECT p.ProductID, p.Name
+FROM Production.Product p
+WHERE p.Name LIKE 'Lock Washer%'
+ORDER BY p.ProductID
+
+
+
+--QUESTION 29
+--Write a query in SQL to fetch rows from product table and order the result set on an unspecified column listprice. 
+--Return product ID, name, and color of the product.
+
+SELECT p.ProductID, p.Name, P.Color
+FROM Production.Product p
+ORDER BY p.ListPrice;
+
+
+
+--QUESTION 30
+--From the following table write a query in SQL to retrieve records of employees. Order the output on year (default ascending order) of hiredate. 
+--Return BusinessEntityID, JobTitle, and HireDate.
+
+SELECT h.BusinessEntityID, h.JobTitle, h.HireDate
+FROM HumanResources.Employee h
+ORDER BY YEAR(h.HireDate)
+
+
+
+--QUESTION 31
+--From the following table write a query in SQL to retrieve those persons whose last name begins with letter 'R'. 
+--Return lastname, and firstname and display the result in ascending order on firstname and descending order on lastname columns.
+
+SELECT p.lastname, p.firstname
+FROM Person.Person p
+WHERE p.LastName LIKE 'R%'
+ORDER BY p.FirstName, p.LastName DESC;
+
+
+
+--QUESTION 32
+--From the following table write a query in SQL to order the BusinessEntityID column descendingly when SalariedFlag set to 'true' and BusinessEntityID in ascending order when SalariedFlag set to 'false'. 
+--Return BusinessEntityID, SalariedFlag columns.
+
+SELECT h.BusinessEntityID, h.SalariedFlag 
+FROM HumanResources.Employee h
+ORDER BY CASE h.SalariedFlag WHEN 'true' THEN h.BusinessEntityID END DESC,
+		CASE WHEN h.SalariedFlag = 'false' THEN h.BusinessEntityID END;
+
+
+
+--QUESTION 33
+--From the following table write a query in SQL to set the result in order by the column TerritoryName 
+--when the column CountryRegionName is equal to 'United States' and by CountryRegionName for all other rows.
+
+SELECT s.BusinessEntityID, p.LastName, t.Name AS territoryname, t.CountryRegionCode
+FROM Sales.SalesPerson s
+INNER JOIN Sales.SalesTerritory t
+	ON s.TerritoryID = t.TerritoryID
+INNER JOIN Person.Person p
+	ON p.BusinessEntityID = s.BusinessEntityID
+ORDER BY CASE t.CountryRegionCode WHEN 'US' THEN t.Name 
+		ELSE t.CountryRegionCode END;
+
+
+--QUESTION 34
+--From the following table write a query in SQL to find those persons who lives in a territory and the value of salesytd except 0. 
+--Return first name, last name,row number as 'Row Number', 'Rank', 'Dense Rank' and NTILE as 'Quartile', salesytd and postalcode. Order the output on postalcode column.
+
+SELECT p.FirstName, p.LastName, 
+	ROW_NUMBER() OVER(ORDER BY a.postalcode) AS Row_number, 
+	RANK() OVER(ORDER BY a.PostalCode) AS Rank,
+	DENSE_RANK() OVER(ORDER BY a.PostalCode) AS Dense_Rank,
+	NTILE(4) OVER (ORDER BY a.PostalCode) AS Quartile,
+	s.SalesYTD, a.PostalCode
+FROM Person.Person p
+INNER JOIN Sales.SalesPerson s
+	ON p.BusinessEntityID = s.BusinessEntityID
+INNER JOIN Person.Address a
+	ON p.BusinessEntityID = a.AddressID
+WHERE s.TerritoryID IS NOT NULL AND s.SalesYTD <> 0
