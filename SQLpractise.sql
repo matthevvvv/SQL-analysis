@@ -383,3 +383,163 @@ INNER JOIN Sales.SalesPerson s
 INNER JOIN Person.Address a
 	ON p.BusinessEntityID = a.AddressID
 WHERE s.TerritoryID IS NOT NULL AND s.SalesYTD <> 0
+
+
+
+--QUESTION 35
+--From the following table write a query in SQL to skip the first 10 rows from the sorted result set and return all remaining rows.
+
+SELECT DepartmentID, Name, GroupName
+FROM HumanResources.Department
+ORDER BY DepartmentID OFFSET 10 ROWS;
+
+
+
+--QUESTION 36
+--From the following table write a query in SQL to skip the first 5 rows and return the next 5 rows from the sorted result set.
+
+SELECT DepartmentID, Name, GroupName
+FROM HumanResources.Department
+ORDER BY DepartmentID 
+	OFFSET 5 ROWS
+	FETCH NEXT 5 ROWS ONLY;
+
+
+
+--QUESTION 37
+-- From the following table write a query in SQL to list all the products that are Red or Blue in color. Return name, color and listprice.Sorts this result by the column listprice.
+
+SELECT Name, Color, ListPrice
+FROM Production.Product
+WHERE Color IN ('Blue', 'Red')
+ORDER BY ListPrice;
+
+
+
+--QUESTION 38
+--Create a SQL query from the SalesOrderDetail table to retrieve the product name and any associated sales orders. 
+--Additionally, it returns any sales orders that don't have any items mentioned in the Product table as well as any products that have sales orders other than those that are listed there. 
+--Return product name, salesorderid. Sort the result set on product name column.
+
+SELECT p.Name, s.SalesOrderID
+FROM Production.Product p
+FULL OUTER JOIN Sales.SalesOrderDetail s
+	ON p.ProductID = s.ProductID
+ORDER BY p.Name;
+
+
+
+--QUESTION 39
+--From the following table write a SQL query to retrieve the product name and salesorderid. Both ordered and unordered products are included in the result set.
+
+SELECT p.Name, s.SalesOrderID
+FROM Production.Product p
+LEFT OUTER JOIN Sales.SalesOrderDetail s
+	ON p.ProductID = s.ProductID
+ORDER BY p.Name;
+
+
+
+--QUESTION 40
+--From the following tables write a SQL query to get all product names and sales order IDs. Order the result set on product name column.
+
+SELECT p.Name, s.SalesOrderID
+FROM Production.Product p
+INNER JOIN Sales.SalesOrderDetail s
+	ON p.ProductID = s.ProductID
+ORDER BY p.Name
+
+
+
+--QUESTION 41
+--From the following tables write a SQL query to retrieve the territory name and BusinessEntityID. 
+--The result set includes all salespeople, regardless of whether or not they are assigned a territory.
+
+SELECT t.Name, p.BusinessEntityID
+FROM Sales.SalesTerritory t
+RIGHT JOIN Sales.SalesPerson p
+	ON p.TerritoryID = t.TerritoryID
+
+
+
+--QUESTION 42
+--Write a query in SQL to find the employee's full name (firstname and lastname) and city from the following tables. 
+--Order the result set on lastname then by firstname.
+
+SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, a.City
+FROM Person.Person p
+JOIN Person.BusinessEntityAddress t
+	ON p.BusinessEntityID = t.BusinessEntityID
+JOIN Person.Address a
+	ON t.AddressID = a.AddressID
+ORDER BY p.LastName, p.FirstName
+
+
+
+--QUESTION 43
+--Write a SQL query to return the businessentityid,firstname and lastname columns of all persons in the person table (derived table) with persontype is 'IN' and the last name is 'Adams'. 
+--Sort the result set in ascending order on firstname. A SELECT statement after the FROM clause is a derived table.
+
+SELECT *
+FROM ( SELECT p.businessentityid, p.FirstName, p.LastName
+	FROM Person.Person p
+	WHERE p.PersonType = 'IN' AND p.LastName = 'Adams') AS derived
+ORDER BY FirstName;
+
+
+
+--QUESTION 44
+--Create a SQL query to retrieve individuals from the following table with a businessentityid inside 1500, a lastname starting with 'Al', and a firstname starting with 'M'.
+
+SELECT BusinessEntityID, FirstName, LastName
+FROM Person.Person
+WHERE BusinessEntityID <= 1500 AND LastName LIKE 'Al%' AND FirstName LIKE 'M%'
+ORDER BY BusinessEntityID
+
+
+
+--QUESTION 45
+--Write a SQL query to find the productid, name, and colour of the items 'Blade', 'Crown Race' and 'AWC Logo Cap' using a derived table with multiple values.
+
+SELECT ProductID, Name, Color
+FROM (SELECT * FROM Production.Product p
+	WHERE p.Name IN ('Blade', 'Crown Race', 'AWC Logo Cap')) AS items
+
+
+
+--QUESTION 46
+--Create a SQL query to display the total number of sales orders each sales representative receives annually. 
+--Sort the result set by SalesPersonID and then by the date component of the orderdate in ascending order. Return the year component of the OrderDate, SalesPersonID, and SalesOrderID.
+
+SELECT SalesPersonID, YEAR(OrderDate),
+COUNT(*) OVER( PARTITION BY salespersonid, YEAR(OrderDate)) AS count_quantity
+FROM Sales.SalesOrderHeader
+WHERE SalesPersonID IS NOT NULL
+
+SELECT SalesPersonID, 
+	COUNT(SalesOrderID) AS totalsales,
+	YEAR(OrderDate) AS salesyear
+FROM Sales.SalesOrderHeader
+WHERE SalesPersonID IS NOT NULL
+GROUP BY YEAR(OrderDate), SalesPersonID
+ORDER BY SalesPersonID, salesyear;
+
+
+
+--QUESTION 47
+--From the following table write a query in SQL to find the average number of sales orders for all the years of the sales representatives.
+
+SELECT COUNT(salespersonid)/COUNT(DISTINCT(salespersonid)) AS 'Average Sales Per Person'
+FROM Sales.SalesOrderHeader
+
+--OR
+
+WITH Sales_CTE (SalesPersonID, NumberOfOrders)
+AS
+(SELECT SalesPersonID, COUNT(*)
+FROM Sales.SalesOrderHeader
+WHERE SalesPersonID IS NOT NULL
+GROUP BY SalesPersonID)
+
+SELECT AVG(NumberOfOrders) AS 'Average Sales Per Person'
+FROM Sales_CTE;
