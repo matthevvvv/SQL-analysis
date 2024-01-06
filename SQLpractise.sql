@@ -543,3 +543,165 @@ GROUP BY SalesPersonID)
 
 SELECT AVG(NumberOfOrders) AS 'Average Sales Per Person'
 FROM Sales_CTE;
+
+
+
+--QUESTION 48
+--Write a SQL query on the following table to retrieve records with the characters green_ in the LargePhotoFileName field. 
+--The following table's columns must all be returned.
+
+SELECT *
+FROM Production.ProductPhoto
+WHERE LargePhotoFileName LIKE '%green/_%' ESCAPE '/';
+
+
+
+--QUESTION 49
+--Write a SQL query to retrieve the mailing address for any company that is outside the United States (US) and in a city whose name starts with Pa. 
+--Return Addressline1, Addressline2, city, postalcode, countryregioncode columns.
+
+SELECT a.AddressLine1, a.AddressLine2, a.City, a.PostalCode, s.CountryRegionCode
+FROM Person.Address a
+INNER JOIN Person.StateProvince s
+	ON a.StateProvinceID = s.StateProvinceID
+WHERE (a.City LIKE 'Pa%') AND (s.CountryRegionCode <> 'US');
+
+
+
+--QUESTION 50
+--From the following table write a query in SQL to fetch first twenty rows. Return jobtitle, hiredate. Order the result set on hiredate column in descending order.
+
+SELECT TOP 20 JobTitle, HireDate
+FROM HumanResources.Employee
+ORDER BY HireDate DESC
+
+
+
+--QUESTION 51
+--From the following tables write a SQL query to retrieve the orders with orderqtys greater than 5 or unitpricediscount less than 1000, and totaldues greater than 100. 
+--Return all the columns from the tables.
+
+SELECT h.*, d.*
+FROM Sales.SalesOrderHeader h
+INNER JOIN sales.SalesOrderDetail d
+	ON h.SalesOrderID = d.SalesOrderID
+WHERE (d.OrderQty > 5 OR D.UnitPriceDiscount < 1000) 
+	AND h.TotalDue > 100;
+
+
+
+--QUESTION 52
+--From the following table write a query in SQL that searches for the word 'red' in the name column. Return name, and color columns from the table.
+
+SELECT Name, Color
+FROM Production.Product
+WHERE Name LIKE '%red%';
+
+
+
+--QUESTION 53
+--From the following table write a query in SQL to find all the products with a price of $80.99 that contain the word Mountain. 
+--Return name, and listprice columns from the table.
+
+SELECT Name, ListPrice
+FROM Production.Product
+WHERE ListPrice = '80.99' AND Name LIKE '%Mountain%';
+
+
+
+--QUESTION 54
+--From the following table write a query in SQL to retrieve all the products that contain either the phrase Mountain or Road. Return name, and color columns.
+
+SELECT Name, Color
+FROM Production.Product
+WHERE Name LIKE '%Mountain%' OR NAME LIKE '%Road%';
+
+
+
+--QUESTION 55
+--From the following table write a query in SQL to search for name which contains both the word 'Mountain' and the word 'Black'. Return Name and color.
+
+SELECT Name, Color 
+FROM Production.Product
+WHERE Name LIKE '%Mountain%' AND NAME LIKE '%Black%';
+
+
+
+--QUESTION 56
+--From the following table write a query in SQL to return all the product names with at least one word starting with the prefix chain in the Name column.
+
+SELECT Name, Color
+FROM Production.Product
+WHERE Name LIKE 'Chain' OR Name LIKE 'Chain %';
+
+
+
+--QUESTION 57
+--From the following table write a query in SQL to return all category descriptions containing strings with prefixes of either chain or full.
+
+SELECT Name, Color
+FROM Production.Product
+WHERE Name LIKE 'Chain' OR Name LIKE 'Chain %' OR Name LIKE 'Full%' ;
+
+
+
+--QUESTION 58
+--From the following table write a SQL query to output an employee's name and email address, separated by a new line character.
+
+SELECT CONCAT(p.firstname, ' ', p.LastName, CHAR(10), e.EmailAddress)
+FROM Person.Person p
+INNER JOIN Person.EmailAddress e
+ON p.BusinessEntityID = e.BusinessEntityID
+
+
+
+--QUESTION 59
+--From the following table write a SQL query to locate the position of the string "yellow" where it appears in the product name.
+
+SELECT Name, CHARINDEX('yellow', Name) AS starting_position
+FROM Production.Product
+WHERE CHARINDEX('yellow', Name) > 0;
+
+
+
+--QUESTION 60
+--From the following table write a query in SQL to concatenate the name, color, and productnumber columns.
+
+SELECT CONCAT(Name, '	color:-', Color, ' Product Number:', ProductNumber) AS result, Color
+FROM Production.Product
+
+
+
+--QUESTION 61
+--Write a SQL query that concatenate the columns name, productnumber, colour, and a new line character from the following table, each separated by a specified character.
+
+SELECT CONCAT(Name, ',',ProductNumber,',', Color, CHAR(10)) AS	databaseinfo
+FROM Production.Product
+ 
+
+
+--QUESTION 62
+--From the following table write a query in SQL to return the five leftmost characters of each product name.
+
+SELECT LEFT(Name, 5) AS leftmost
+FROM Production.Product
+
+
+
+--QUESTION 63
+--From the following table write a query in SQL to select the number of characters and the data in FirstName for people located in Australia.
+
+SELECT LEN(FirstName) AS 'length', FirstName, LastName
+FROM Sales.vindividualcustomer
+WHERE CountryRegionName = 'Australia';
+
+
+
+--QUESTION 64
+--From the following tables write a query in SQL to return the number of characters in the column FirstName and the first and last name of contacts located in Australia.
+
+SELECT DISTINCT LEN(c.FirstName) AS fnamelength, c.FirstName, c.LastName
+FROM Sales.vstorewithcontacts c
+INNER JOIN Sales.vstorewithaddresses a
+	ON c.BusinessEntityID = a.BusinessEntityID
+WHERE CountryRegionName = 'Australia';
