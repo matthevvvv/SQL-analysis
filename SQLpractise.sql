@@ -242,7 +242,7 @@ SELECT FORMAT(h.ratechangedate, 'yyyy-MM-dd') AS fromdate, --CAST(h.ratechangeda
 FROM HumanResources.EmployeePayHistory h
 INNER JOIN Person.Person p
 	ON p.BusinessEntityID = h.BusinessEntityID
-ORDER BY nameinfull
+ORDER BY nameinfull;
 
 
 
@@ -259,7 +259,7 @@ INNER JOIN Person.Person p
 	WHERE h.RateChangeDate = (SELECT MAX(ratechangedate)
 	FROM HumanResources.EmployeePayHistory
 	WHERE BusinessEntityID = h.BusinessEntityID)
-ORDER BY nameinfull
+ORDER BY nameinfull;
 
 
 
@@ -274,7 +274,7 @@ SELECT s.SalesOrderID, s.productid, s.orderqty,
 	MIN(s.OrderQty) OVER( PARTITION BY s.salesorderid)AS min_quantity, 
 	MAX(s.OrderQty) OVER( PARTITION BY s.salesorderid)AS max_quantity 
 FROM Sales.SalesOrderDetail s
-WHERE s.SalesOrderID IN ('43659','43664')
+WHERE s.SalesOrderID IN ('43659','43664');
 
 
 
@@ -307,7 +307,7 @@ HAVING SUM(s.unitprice*s.OrderQty) > 100000;
 SELECT p.ProductID, p.Name
 FROM Production.Product p
 WHERE p.Name LIKE 'Lock Washer%'
-ORDER BY p.ProductID
+ORDER BY p.ProductID;
 
 
 
@@ -327,7 +327,7 @@ ORDER BY p.ListPrice;
 
 SELECT h.BusinessEntityID, h.JobTitle, h.HireDate
 FROM HumanResources.Employee h
-ORDER BY YEAR(h.HireDate)
+ORDER BY YEAR(h.HireDate);
 
 
 
@@ -382,7 +382,7 @@ INNER JOIN Sales.SalesPerson s
 	ON p.BusinessEntityID = s.BusinessEntityID
 INNER JOIN Person.Address a
 	ON p.BusinessEntityID = a.AddressID
-WHERE s.TerritoryID IS NOT NULL AND s.SalesYTD <> 0
+WHERE s.TerritoryID IS NOT NULL AND s.SalesYTD <> 0;
 
 
 
@@ -447,7 +447,7 @@ SELECT p.Name, s.SalesOrderID
 FROM Production.Product p
 INNER JOIN Sales.SalesOrderDetail s
 	ON p.ProductID = s.ProductID
-ORDER BY p.Name
+ORDER BY p.Name;
 
 
 
@@ -458,7 +458,7 @@ ORDER BY p.Name
 SELECT t.Name, p.BusinessEntityID
 FROM Sales.SalesTerritory t
 RIGHT JOIN Sales.SalesPerson p
-	ON p.TerritoryID = t.TerritoryID
+	ON p.TerritoryID = t.TerritoryID;
 
 
 
@@ -472,7 +472,7 @@ JOIN Person.BusinessEntityAddress t
 	ON p.BusinessEntityID = t.BusinessEntityID
 JOIN Person.Address a
 	ON t.AddressID = a.AddressID
-ORDER BY p.LastName, p.FirstName
+ORDER BY p.LastName, p.FirstName;
 
 
 
@@ -494,7 +494,7 @@ ORDER BY FirstName;
 SELECT BusinessEntityID, FirstName, LastName
 FROM Person.Person
 WHERE BusinessEntityID <= 1500 AND LastName LIKE 'Al%' AND FirstName LIKE 'M%'
-ORDER BY BusinessEntityID
+ORDER BY BusinessEntityID;
 
 
 
@@ -503,7 +503,7 @@ ORDER BY BusinessEntityID
 
 SELECT ProductID, Name, Color
 FROM (SELECT * FROM Production.Product p
-	WHERE p.Name IN ('Blade', 'Crown Race', 'AWC Logo Cap')) AS items
+	WHERE p.Name IN ('Blade', 'Crown Race', 'AWC Logo Cap')) AS items;
 
 
 
@@ -573,7 +573,7 @@ WHERE (a.City LIKE 'Pa%') AND (s.CountryRegionCode <> 'US');
 
 SELECT TOP 20 JobTitle, HireDate
 FROM HumanResources.Employee
-ORDER BY HireDate DESC
+ORDER BY HireDate DESC;
 
 
 
@@ -651,7 +651,7 @@ WHERE Name LIKE 'Chain' OR Name LIKE 'Chain %' OR Name LIKE 'Full%' ;
 SELECT CONCAT(p.firstname, ' ', p.LastName, CHAR(10), e.EmailAddress)
 FROM Person.Person p
 INNER JOIN Person.EmailAddress e
-ON p.BusinessEntityID = e.BusinessEntityID
+ON p.BusinessEntityID = e.BusinessEntityID;
 
 
 
@@ -668,7 +668,7 @@ WHERE CHARINDEX('yellow', Name) > 0;
 --From the following table write a query in SQL to concatenate the name, color, and productnumber columns.
 
 SELECT CONCAT(Name, '	color:-', Color, ' Product Number:', ProductNumber) AS result, Color
-FROM Production.Product
+FROM Production.Product;
 
 
 
@@ -676,7 +676,7 @@ FROM Production.Product
 --Write a SQL query that concatenate the columns name, productnumber, colour, and a new line character from the following table, each separated by a specified character.
 
 SELECT CONCAT(Name, ',',ProductNumber,',', Color, CHAR(10)) AS	databaseinfo
-FROM Production.Product
+FROM Production.Product;
  
 
 
@@ -684,7 +684,7 @@ FROM Production.Product
 --From the following table write a query in SQL to return the five leftmost characters of each product name.
 
 SELECT LEFT(Name, 5) AS leftmost
-FROM Production.Product
+FROM Production.Product;
 
 
 
@@ -705,3 +705,116 @@ FROM Sales.vstorewithcontacts c
 INNER JOIN Sales.vstorewithaddresses a
 	ON c.BusinessEntityID = a.BusinessEntityID
 WHERE CountryRegionName = 'Australia';
+
+
+
+--QUESTION 65
+--From the following table write a query in SQL to select product names that have prices between $1000.00 and $1220.00. 
+--Return product name as Lower, Upper, and also LowerUpper.
+
+SELECT LOWER(Name) AS 'lower', 
+	UPPER(Name) AS 'upper', 
+	LOWER(UPPER(Name ))AS 'lowerupper'
+FROM Production.Product
+WHERE StandardCost BETWEEN 1000 AND 1220;
+
+
+
+--QUESTION 66
+--Write a query in SQL to remove the spaces from the beginning of a string.
+
+SELECT  '     five space then the text' AS "Original Text",
+	LTRIM('     five space then the text') AS "Trimmed Text(space removed)";
+
+
+
+--QUESTION 67
+--From the following table write a query in SQL to remove the substring 'HN' from the start of the column productnumber. 
+--Filter the results to only show those productnumbers that start with "HN". Return original productnumber column and 'TrimmedProductnumber'.
+
+SELECT ProductNumber, SUBSTRING(ProductNumber, 3, LEN(Productnumber)) AS Trimmed
+FROM Production.Product
+WHERE ProductNumber LIKE 'HN%';
+
+
+
+--QUESTION 68
+--From the following table write a query in SQL to repeat a 0 character four times in front of a production line for production line 'T'.
+
+SELECT NAME, CONCAT('0000', ProductLine) AS "Line Code"
+FROM Production.Product
+WHERE ProductLine = 'T';
+
+
+
+--QUESTION 69
+--From the following table write a SQL query to retrieve all contact first names with the characters inverted for people whose businessentityid is less than 6.
+
+SELECT FirstName, REVERSE(Firstname) AS Reverse_name
+FROM Person.Person
+WHERE BusinessEntityID < 6;
+
+
+
+--QUESTION 70
+--From the following table write a query in SQL to return the eight rightmost characters of each name of the product. 
+--Also return name, productnumber column. Sort the result set in ascending order on productnumber.
+
+SELECT Name, ProductNumber, SUBSTRING(NAME, LEN(Name)-7, 9) AS "Product Name"  
+FROM Production.Product
+ORDER BY ProductNumber;
+
+--OR
+
+SELECT name, productnumber, RIGHT(name, 8) AS "Product Name"  
+FROM production.product 
+ORDER BY productnumber;
+
+
+
+--QUESTION 71
+--Write a query in SQL to remove the spaces at the end of a string.
+
+SELECT  CONCAT('text then five spaces     ','after space') AS "Original Text",
+	CONCAT(RTRIM('text then five spaces    '),'after space') AS "Trimmed Text(space removed)";
+
+
+
+--QUESTION 72
+--From the following table write a query in SQL to fetch the rows for the product name ends with the letter 'S' or 'M' or 'L'. Return productnumber and name.
+
+
+
+SELECT ProductNumber,Name
+FROM Production.Product
+WHERE 
+Name LIKE '% S' OR Name LIKE '% M' OR Name LIKE '% L';
+
+
+
+--QUESTION 73
+--From the following table write a query in SQL to replace null values with 'N/A' and return the names separated by commas in a single row.
+
+SELECT STRING_AGG(COALESCE(FirstName, 'N/A'),',') AS test
+FROM Person.Person;
+
+
+
+--QUESTION 74
+--From the following table write a query in SQL to return the names and modified date separated by commas in a single row.
+
+SELECT STRING_AGG(CONCAT(firstname, ' ', lastname, ' ', '(',ModifiedDate,')'), ',') AS test
+FROM Person.Person;
+
+
+
+--QUESTION 75
+--From the following table write a query in SQL to find the email addresses of employees and groups them by city. Return top ten rows.
+
+SELECT TOP 4 a.City, STRING_AGG(e.emailaddress, ';') AS emails
+FROM Person.EmailAddress e
+INNER JOIN Person.BusinessEntityAddress b
+	ON e.BusinessEntityID = b.BusinessEntityID
+INNER JOIN Person.Address a
+	ON b.AddressID = a.AddressID
+GROUP BY a.City;
