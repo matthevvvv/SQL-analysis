@@ -818,3 +818,255 @@ INNER JOIN Person.BusinessEntityAddress b
 INNER JOIN Person.Address a
 	ON b.AddressID = a.AddressID
 GROUP BY a.City;
+
+
+
+--QUESTION 76
+--From the following table write a query in SQL to create a new job title called "Production Assistant" in place of "Production Supervisor".
+
+SELECT jobtitle, STUFF(jobtitle, 12, 10, 'Assistant') as "New Jobtitle"
+FROM humanresources.employee 
+WHERE SUBSTRING(jobtitle,12,10)='Supervisor';
+
+
+
+--QUESTION 77
+--From the following table write a SQL query to retrieve all the employees whose job titles begin with "Sales". 
+--Return firstname, middlename, lastname and jobtitle column.
+
+SELECT p.FirstName, p.MiddleName, p.LastName, h.JobTitle
+FROM Person.Person p
+JOIN HumanResources.Employee h
+ON p.BusinessEntityID = h.BusinessEntityID
+WHERE h.JobTitle LIKE 'Sales%';
+
+
+
+--QUESTION 78
+--From the following table write a query in SQL to return the last name of people so that it is in uppercase, trimmed, and concatenated with the first name.
+
+SELECT TRIM(CONCAT(UPPER(lastname), ', ', firstname)) AS name
+FROM Person.Person;
+
+
+--QUESTION 79
+--From the following table write a query in SQL to show a resulting expression that is too small to display. 
+--Return FirstName, LastName, Title, and SickLeaveHours. The SickLeaveHours will be shown as a small expression in text format.
+
+SELECT p.FirstName, p.LastName, p.Title, CAST(h.SickLeaveHours AS char(1)) AS "Sick Leave"
+FROM HumanResources.Employee h
+JOIN Person.Person p
+ON p.BusinessEntityID = h.BusinessEntityID;
+
+
+
+--QUESTION 80
+--From the following table write a query in SQL to retrieve the name of the products. Product, that have 33 as the first two digits of listprice.
+
+SELECT Name, ListPrice
+FROM Production.Product
+WHERE ListPrice LIKE '33%';
+
+
+
+--QUESTION 81
+--From the following table write a query in SQL to calculate by dividing the total year-to-date sales (SalesYTD) by the commission percentage (CommissionPCT). 
+--Return SalesYTD, CommissionPCT, and the value rounded to the nearest whole number.
+
+SELECT SalesYTD, CommissionPct, CAST(ROUND(SalesYTD/NULLIF(CommissionPct,0),0)AS INT) AS division
+FROM Sales.SalesPerson;
+
+
+
+--QUESTION 82
+--From the following table write a query in SQL to find those persons that have a 2 in the first digit of their SalesYTD. 
+--Convert the SalesYTD column to an int type, and then to a char(20) type. Return FirstName, LastName, SalesYTD, and BusinessEntityID.
+
+SELECT p.FirstName, p.LastName, CAST(CAST(s.SalesYTD AS INT) AS CHAR(20)) AS salesytd, p.BusinessEntityID
+FROM Person.Person p
+JOIN Sales.SalesPerson s
+ON p.BusinessEntityID = s.BusinessEntityID
+WHERE s.SalesYTD LIKE '2%';  
+
+
+
+--QUESTION 83
+--From the following table write a query in SQL to convert the Name column to a char(16) column. 
+--Convert those rows if the name starts with 'Long-Sleeve Logo Jersey'. Return name of the product and listprice.
+
+SELECT CAST(Name AS CHAR(16)), ListPrice
+FROM Production.Product
+WHERE Name LIKE 'Long-Sleeve Logo Jersey%';
+
+
+
+--QUESTION 84
+--From the following table write a SQL query to determine the discount price for the salesorderid 46672. Calculate only those orders with discounts of more than.02 percent. 
+--Return productid, UnitPrice, UnitPriceDiscount, and DiscountPrice (UnitPrice*UnitPriceDiscount ).
+
+SELECT ProductID, UnitPrice, UnitPriceDiscount, UnitPrice*UnitPriceDiscount AS DiscountPrice
+FROM Sales.SalesOrderDetail
+WHERE UnitPriceDiscount > 0.02 AND SalesOrderID = 46672;
+
+
+
+--QUESTION 85
+--From the following table write a query in SQL to calculate the average vacation hours, and the sum of sick leave hours, that the vice presidents have used.
+
+SELECT AVG(vacationhours) AS 'Average vacation hours', SUM(sickleavehours) AS 'Total sick leave hours'
+FROM HumanResources.Employee
+WHERE JobTitle LIKE 'Vice President%';
+
+
+
+--QUESTION 86
+--From the following table write a query in SQL to calculate the average bonus received and the sum of year-to-date sales for each territory. 
+--Return territoryid, Average bonus, and YTD sales.
+
+SELECT TerritoryID, AVG(Bonus) AS 'Average bonus', SUM(SalesYTD) AS 'YTD sales'
+FROM Sales.SalesPerson
+GROUP BY TerritoryID;
+
+
+
+--QUESTION 87
+--From the following table write a query in SQL to return the average list price of products. Consider the calculation only on unique values.
+
+SELECT AVG(DISTINCT(ListPrice))
+FROM Production.Product;
+
+
+
+--QUESTION 88
+--From the following table write a query in SQL to return a moving average of yearly sales for each territory. 
+--Return BusinessEntityID, TerritoryID, SalesYear, SalesYTD, average SalesYTD as MovingAvg, and total SalesYTD as CumulativeTotal.
+
+SELECT BusinessEntityID, TerritoryID, YEAR(modifieddate), SalesYTD, 
+AVG(salesYTD) OVER (PARTITION BY territoryid ORDER BY YEAR(modifieddate)) AS MovingAvg, 
+SUM(salesYTD) OVER (PARTITION BY territoryid ORDER BY YEAR(modifieddate)) AS CumulativeTotal
+FROM Sales.SalesPerson;
+
+
+
+--QUESTION 89
+--From the following table write a query in SQL to return a moving average of sales, by year, for all sales territories. 
+--Return BusinessEntityID, TerritoryID, SalesYear, SalesYTD, average SalesYTD as MovingAvg, and total SalesYTD as CumulativeTotal.
+
+SELECT BusinessEntityID, TerritoryID, YEAR(ModifiedDate) AS salesyear, SalesYTD, SalesYTD ,
+AVG(salesYTD) OVER (PARTITION BY YEAR(modifieddate) ORDER BY YEAR(modifieddate)) AS MovingAvg, 
+SUM(salesYTD) OVER (PARTITION BY YEAR(modifieddate) ORDER BY YEAR(modifieddate)) AS CumulativeTotal
+FROM Sales.SalesPerson;
+
+
+
+--QUESTION 90
+--From the following table write a query in SQL to return the number of different titles that employees can hold.
+
+SELECT COUNT(DISTINCT JobTitle) AS 'Number of Jobtitles'
+FROM HumanResources.Employee;
+
+
+
+--QUESTION 91
+--From the following table write a query in SQL to find the total number of employees.
+
+SELECT COUNT(*) AS 'Number of employees'
+FROM HumanResources.Employee;
+
+
+
+--QUESTION 92
+--From the following table write a query in SQL to find the average bonus for the salespersons who achieved the sales quota above 25000. 
+--Return number of salespersons, and average bonus.
+
+SELECT COUNT(BusinessEntityID) AS count, AVG(bonus) AS avg
+FROM Sales.SalesPerson
+WHERE SalesQuota > 25000;
+
+
+
+--QUESTION 93
+--From the following tables wirte a query in SQL to return aggregated values for each department. 
+--Return name, minimum salary, maximum salary, average salary, and number of employees in each department.
+
+SELECT DISTINCT d.name,
+	MIN(e.rate) OVER (PARTITION BY h.departmentid ORDER BY h.departmentid) AS minsalary,
+	MAX(e.rate) OVER (PARTITION BY h.departmentid ORDER BY h.departmentid) AS maxsalary,
+	AVG(e.rate) OVER (PARTITION BY h.departmentid ORDER BY h.departmentid) AS avgsalary,
+	COUNT(h.BusinessEntityID) OVER (PARTITION BY h.departmentid ORDER BY h.departmentid) AS employeesperdept
+FROM HumanResources.EmployeePayHistory e
+INNER JOIN HumanResources.EmployeeDepartmentHistory h
+	ON e.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Department d
+	ON h.DepartmentID = d.DepartmentID
+WHERE h.EndDate IS NULL;
+
+
+
+--QUESTION 94
+--From the following tables write a SQL query to return the departments of a company that each have more than 15 employees.
+
+SELECT JobTitle, COUNT(BusinessEntityID) AS employeenumber
+FROM HumanResources.Employee
+GROUP BY JobTitle
+HAVING COUNT(BusinessEntityID) > 15;
+
+
+
+--QUESTION 95
+--From the following table write a query in SQL to find the number of products that ordered in each of the specified sales orders.
+
+SELECT salesorderid, COUNT(orderqty) AS productcount
+FROM Sales.SalesOrderDetail
+GROUP BY SalesOrderID;
+
+
+
+--QUESTION 96
+--From the following table write a query in SQL to compute the statistical variance of the sales quota values for each quarter in a calendar year for a sales person. 
+--Return year, quarter, salesquota and variance of salesquota.
+
+SELECT QuotaDate AS year, datepart(QUARTER, quotadate) AS quarter, AVG(salesquota), VAR(SalesQuota) AS variance
+FROM Sales.SalesPersonQuotaHistory
+GROUP BY QuotaDate, datepart(QUARTER, quotadate);
+
+
+
+--QUESTION 97
+--From the following table write a query in SQL to populate the variance of all unique values as well as all values, including any duplicates values of SalesQuota column.
+
+SELECT VAR(DISTINCT SalesQuota) AS distinct_values, VAR(SalesQuota) AS all_values
+FROM Sales.SalesPersonQuotaHistory;
+
+
+
+--QUESTION 98
+--From the following table write a query in SQL to return the total ListPrice and StandardCost of products for each color. Products that name starts with 'Mountain' and ListPrice is more than zero. 
+--Return Color, total list price, total standardcode. Sort the result set on color in ascending order.
+
+SELECT Color, SUM(ListPrice) AS sum, SUM(StandardCost) AS sum
+FROM Production.Product
+WHERE Name LIKE 'Mountain%' 
+	AND ListPrice > 0
+	AND Color IS NOT NULL
+GROUP BY Color;
+
+
+
+--QUESTION 99
+--From the following table write a query in SQL to find the TotalSalesYTD of each SalesQuota. 
+--Show the summary of the TotalSalesYTD amounts for all SalesQuota groups. Return SalesQuota and TotalSalesYTD.
+
+SELECT SalesQuota, SUM(SalesYTD),
+GROUPING(SalesQuota) AS Grouping
+FROM Sales.SalesPerson
+GROUP BY ROLLUP(SalesQuota);
+
+
+
+--QUESTION 100
+--From the following table write a query in SQL to calculate the sum of the ListPrice and StandardCost for each color. Return color, sum of ListPrice.
+
+SELECT Color, SUM(ListPrice) AS totallist, SUM(StandardCost) AS totalcost
+FROM Production.Product
+GROUP BY Color;
