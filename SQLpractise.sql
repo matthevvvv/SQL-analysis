@@ -1070,3 +1070,136 @@ GROUP BY ROLLUP(SalesQuota);
 SELECT Color, SUM(ListPrice) AS totallist, SUM(StandardCost) AS totalcost
 FROM Production.Product
 GROUP BY Color;
+
+
+
+--QUESTION 101
+--From the following table write a query in SQL to calculate the salary percentile for each employee within a given department. 
+--Return department, last name, rate, cumulative distribution and percent rank of rate. Order the result set by ascending on department and descending on rate.
+
+SELECT r.Name, p.LastName, e.Rate, 
+SUM(1.0) OVER (ORDER BY e.rate) / COUNT(*) OVER () AS cumedist, 
+PERCENT_RANK() OVER (ORDER BY E.RATE) AS pctrank
+FROM HumanResources.EmployeeDepartmentHistory d
+INNER JOIN HumanResources.EmployeePayHistory e
+	ON d.BusinessEntityID = e.BusinessEntityID
+INNER JOIN Person.Person p
+	ON d.BusinessEntityID = p.BusinessEntityID
+INNER JOIN HumanResources.Department r
+	ON d.DepartmentID = r.DepartmentID;
+
+
+
+--QUESTION 102
+--From the following table write a query in SQL to return the name of the product that is the least expensive in a given product category. 
+--Return name, list price and the first value i.e. LeastExpensive of the product.
+
+SELECT name, listprice, FIRST_VALUE(Name) OVER (ORDER BY LISTPRICE) AS LeastExpensive
+FROM Production.Product
+WHERE ListPrice > 0 AND ProductSubcategoryID = 1;
+
+
+
+--QUESTION 103
+--From the following table write a query in SQL to return the employee with the fewest number of vacation hours compared to other employees with the same job title. 
+--Partitions the employees by job title and apply the first value to each partition independently.
+
+SELECT FIRST_VALUE(E.JOBTITLE) OVER (PARTITION BY e.jobtitle ORDER BY e.VacationHours) AS jobtitle, 
+p.LastName , e.VacationHours,
+FIRST_VALUE(p.lastname) OVER (PARTITION BY e.jobtitle ORDER BY e.VacationHours) AS fewestvacationhours
+FROM Person.Person p
+INNER JOIN HumanResources.Employee e	
+	ON p.BusinessEntityID = e.BusinessEntityID;
+
+
+
+--QUESTION 104
+--From the following table write a query in SQL to return the difference in sales quotas for a specific employee over previous years. 
+--Returun BusinessEntityID, sales year, current quota, and previous quota.
+
+SELECT BusinessEntityID, YEAR(quotadate) AS salesyear, SalesQuota AS currentquota,
+LAG(salesquota, 1, 0) OVER (ORDER BY  YEAR(quotadate)) AS previousquota
+FROM Sales.SalesPersonQuotaHistory;
+
+
+
+--QUESTION 105
+--From the following table write a query in SQL to compare year-to-date sales between employees. 
+--Return TerritoryName, BusinessEntityID, SalesYTD, and sales of previous year i.e.PrevRepSales. Sort the result set in ascending order on territory name.
+
+SELECT TerritoryName, BusinessEntityID, SalesYTD,  LAG(salesytd, 1, 0) OVER (PARTITION BY territoryname ORDER BY salesytd DESC) AS prevrepsales
+FROM Sales.vSalesPerson
+ORDER BY TerritoryName;
+
+
+
+--QUESTION 106
+--From the following tables write a query in SQL to return the hire date of the last employee in each department for the given salary (Rate). 
+--Return department, lastname, rate, hiredate, and the last value of hiredate.
+
+SELECT d.department, d.LastName, p.Rate, e.HireDate, 
+LAST_VALUE(e.hiredate) OVER (PARTITION BY d.department ORDER BY p.rate) AS lastvalue
+FROM HumanResources.vEmployeeDepartmentHistory d
+INNER JOIN HumanResources.EmployeePayHistory p
+	ON d.BusinessEntityID = p.BusinessEntityID
+INNER JOIN HumanResources.Employee e
+	ON p.BusinessEntityID = e.BusinessEntityID;
+
+
+
+--QUESTION 107
+--From the following table write a query in SQL to compute the difference between the sales quota value for the current quarter and the first and last quarter of the year respectively for a given number of employees. 
+--Return BusinessEntityID, quarter, year, differences between current quarter and first and last quarter. 
+--Sort the result set on BusinessEntityID, SalesYear, and Quarter in ascending order.
+
+SELECT BusinessEntityID, DATEPART(quarter, quotadate) AS quarter, YEAR(QuotaDate) AS salesyear, salesquota AS thisyearquota,
+salesquota - FIRST_VALUE(salesquota) OVER (PARTITION BY businessentityid, YEAR(QuotaDate) ORDER BY DATEPART(quarter, quotadate)) AS difffromfirstquarter,
+salesquota - LAST_VALUE(salesquota) OVER (PARTITION BY businessentityid, YEAR(QuotaDate) ORDER BY DATEPART(quarter, quotadate) 
+	RANGE BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS differencefromlastquarter
+FROM Sales.SalesPersonQuotaHistory
+ORDER BY BusinessEntityID, salesyear, quarter;
+
+
+
+--QUESTION 108
+--From the following table write a query in SQL to return the statistical variance of the sales quota values for a salesperson for each quarter in a calendar year. 
+--Return quotadate, quarter, SalesQuota, and statistical variance. Order the result set in ascending order on quarter.
+
+SELECT YEAR(QuotaDate) AS year, DATEPART(quarter, quotadate) AS quarter, SalesQuota, 
+VAR(salesquota) OVER (ORDER BY YEAR(QuotaDate), DATEPART(quarter, quotadate)) AS variance
+FROM Sales.SalesPersonQuotaHistory
+WHERE YEAR(QuotaDate) LIKE 2012 AND businessentityid = 277;
+
+
+
+--QUESTION 109
+--From the following table write a query in SQL to return the difference in sales quotas for a specific employee over subsequent years. 
+--Return BusinessEntityID, year, SalesQuota, and the salesquota coming in next row.
+
+SELECT BusinessEntityID, YEAR(QuotaDate) AS salesyear, SalesQuota AS currentquota,
+LEAD(salesquota, 1, 0) OVER (ORDER BY YEAR(QuotaDate)) AS nextquota
+FROM Sales.SalesPersonQuotaHistory
+WHERE BusinessEntityID = 277;
+
+
+
+--QUESTION 110
+--From the following query write a query in SQL to compare year-to-date sales between employees for specific terrotery. 
+--Return TerritoryName, BusinessEntityID, SalesYTD, and the salesquota coming in next row.
+
+SELECT TerritoryName, BusinessEntityID, SalesYTD, LEAD(SalesYTD, 1, 0) OVER (PARTITION BY TERRITORYNAME ORDER BY SALESYTD) AS nextrepsales
+FROM Sales.vSalesPerson
+WHERE TerritoryName IN ('Northwest', 'Canada');
+
+
+
+--QUESTION 111
+--From the following table write a query in SQL to obtain the difference in sales quota values for a specified employee over subsequent calendar quarters. 
+--Return year, quarter, sales quota, next sales quota, and the difference in sales quota. Sort the result set on year and then by quarter, both in ascending order.
+
+SELECT YEAR(QuotaDate) AS year, DATEPART(quarter, quotadate)  AS quarter, SalesQuota,
+LEAD(SalesQuota, 1, 0) OVER ( ORDER BY YEAR(QuotaDate), DATEPART(quarter, quotadate)) AS nextquota,
+SalesQuota - LEAD(SalesQuota, 1, 0) OVER ( ORDER BY YEAR(QuotaDate), DATEPART(quarter, quotadate)) AS diff
+FROM Sales.SalesPersonQuotaHistory
+WHERE businessentityid = 277 AND YEAR(QuotaDate) IN (2012,2013)  
+ORDER BY YEAR(QuotaDate), DATEPART(quarter, quotadate);
