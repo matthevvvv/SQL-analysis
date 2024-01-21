@@ -1203,3 +1203,116 @@ SalesQuota - LEAD(SalesQuota, 1, 0) OVER ( ORDER BY YEAR(QuotaDate), DATEPART(qu
 FROM Sales.SalesPersonQuotaHistory
 WHERE businessentityid = 277 AND YEAR(QuotaDate) IN (2012,2013)  
 ORDER BY YEAR(QuotaDate), DATEPART(quarter, quotadate);
+
+
+
+--QUESTION 112
+--From the following table write a query in SQL to compute the salary percentile for each employee within a given department. 
+--Return Department, LastName, Rate, CumeDist, and percentile rank. Sort the result set in ascending order on department and descending order on rate.
+
+SELECT v.department, v.LastName, e.rate,
+CUME_DIST() OVER (PARTITION BY v.department ORDER BY e.rate) AS CumeDist,
+PERCENT_RANK() OVER (PARTITION BY v.department ORDER BY e.rate) AS PercRank
+FROM HumanResources.vEmployeeDepartmentHistory v
+INNER JOIN HumanResources.EmployeePayHistory e
+	ON v.BusinessEntityID = e.BusinessEntityID
+ORDER BY v.Department, e.Rate;
+
+
+
+--QUESTION 113
+--From the following table write a query in SQL to add two days to each value in the OrderDate column, to derive a new column named PromisedShipDate. 
+--Return salesorderid, orderdate, and promisedshipdate column.
+
+SELECT SalesOrderID, OrderDate, DATEADD(DAY , 2, OrderDate) AS promisedshipdate
+FROM Sales.SalesOrderHeader;
+
+
+
+--QUESTION 114
+--From the following table write a query in SQL to obtain a newdate by adding two days with current date for each salespersons. 
+--Filter the result set for those salespersons whose sales value is more than zero.
+
+SELECT p.FirstName, p.LastName, DATEADD(DAY , 2, GETDATE()) AS 'New Date' 
+FROM Sales.SalesPerson s
+INNER JOIN Person.Person p
+	ON s.BusinessEntityID = p.BusinessEntityID
+INNER JOIN Person.Address a
+	ON p.BusinessEntityID = a.AddressID
+WHERE s.SalesQuota IS NOT NULL;
+
+
+
+--QUESTION 115
+--From the following table write a query in SQL to find the differences between the maximum and minimum orderdate.
+
+SELECT DATEDIFF(DAY, MIN(ORDERDATE), MAX(ORDERDATE)) AS difference 
+FROM Sales.SalesOrderHeader;
+
+
+
+--QUESTION 116
+--From the following table write a query in SQL to rank the products in inventory, by the specified inventory locations, according to their quantities. 
+--Divide the result set by LocationID and sort the result set on Quantity in descending order.
+
+SELECT i.ProductID, p.Name, i.LocationID,i.Quantity, DENSE_RANK() OVER (PARTITION BY I.LOCATIONID ORDER BY i.quantity DESC) AS quantrank
+FROM Production.ProductInventory i
+INNER JOIN Production.Product p
+	ON p.ProductID = i.ProductID
+WHERE i.LocationID IN (3, 4)
+ORDER BY I.LOCATIONID;
+
+
+
+--QUESTION 117
+--From the following table write a query in SQL to return the top ten employees ranked by their salary.
+
+SELECT TOP 10 BusinessEntityID, Rate, DENSE_RANK() OVER (ORDER BY rate DESC) AS rankbysalary
+FROM HumanResources.EmployeePayHistory;
+
+
+
+--QUESTION 118
+--From the following table write a query in SQL to divide rows into four groups of employees based on their year-to-date sales. 
+--Return first name, last name, group as quartile, year-to-date sales, and postal code.
+
+SELECT p.FirstName, p.LastName, NTILE(4) OVER (ORDER BY s.SalesYTD DESC) AS quartile, s.SalesYTD, a.PostalCode
+FROM Sales.SalesPerson s
+INNER JOIN Person.Person p
+	ON s.BusinessEntityID = p.BusinessEntityID
+INNER JOIN Person.Address a
+	ON p.BusinessEntityID = a.AddressID;
+
+
+
+--QUESTION 119
+--From the following tables write a query in SQL to rank the products in inventory the specified inventory locations according to their quantities. 
+--The result set is partitioned by LocationID and logically ordered by Quantity. Return productid, name, locationid, quantity, and rank.
+
+SELECT i.ProductID, p.Name, i.LocationID, i.Quantity,
+RANK() OVER (PARTITION BY I.LOCATIONID ORDER BY i.quantity DESC) AS rank
+FROM Production.ProductInventory i
+INNER JOIN Production.Product p
+	ON i.ProductID = p.ProductID
+WHERE i.LocationID IN (3, 4);
+
+
+
+--QUESTION 120
+--From the following table write a query in SQL to find the salary of top ten employees. Return BusinessEntityID, Rate, and rank of employees by salary.
+
+SELECT TOP 10 BusinessEntityID, Rate, RANK() OVER ( ORDER BY rate DESC) AS rankbysalary
+FROM HumanResources.EmployeePayHistory e1
+WHERE RateChangeDate = (SELECT MAX(RateChangeDate)   
+                        FROM HumanResources.EmployeePayHistory AS e2  
+                        WHERE e1.BusinessEntityID = e2.BusinessEntityID)  
+ORDER BY BusinessEntityID;
+
+
+
+--QUESTION 121
+--From the following table write a query in SQL to calculate a row number for the salespeople based on their year-to-date sales ranking. 
+--Return row number, first name, last name, and year-to-date sales.
+
+SELECT ROW_NUMBER() OVER (ORDER BY salesytd DESC) AS row, firstname, lastname, salesytd
+FROM Sales.vSalesPerson;
