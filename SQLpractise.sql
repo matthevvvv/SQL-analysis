@@ -1316,3 +1316,143 @@ ORDER BY BusinessEntityID;
 
 SELECT ROW_NUMBER() OVER (ORDER BY salesytd DESC) AS row, firstname, lastname, salesytd
 FROM Sales.vSalesPerson;
+
+
+
+--QUESTION 122
+--From the following table write a query in SQL to calculate row numbers for all rows between 50 to 60 inclusive. Sort the result set on orderdate.
+
+WITH ordered AS 
+	(SELECT SalesOrderID, OrderDate, ROW_NUMBER() OVER (ORDER BY salesorderid) AS rownumber
+	FROM Sales.SalesOrderHeader)
+
+SELECT SalesOrderID, OrderDate, rownumber
+FROM ordered
+WHERE rownumber BETWEEN 50 AND 60;
+
+
+
+--QUESTION 123
+--From the following table write a query in SQL to return first name, last name, territoryname, salesytd, and row number. Partition the query result set by the TerritoryName. 
+--Orders the rows in each partition by SalesYTD. Sort the result set on territoryname in ascending order.
+
+SELECT FirstName, LastName, TerritoryName, SalesYTD, ROW_NUMBER() OVER (PARTITION BY Territoryname ORDER BY salesytd) AS row 
+FROM Sales.vSalesPerson
+WHERE TerritoryName IS NOT NULL;
+
+
+
+--QUESTION 124
+--From the following table write a query in SQL to order the result set by the column TerritoryName when the column CountryRegionName is equal to 'United States' and by CountryRegionName for all other rows. 
+--Return BusinessEntityID, LastName, TerritoryName, CountryRegionName.
+
+SELECT BusinessEntityID, LastName, TerritoryName, CountryRegionName
+FROM Sales.vSalesPerson
+ORDER BY CASE
+	WHEN CountryRegionName = 'United States' THEN TerritoryName 
+	ELSE CountryRegionName END;
+
+
+
+--QUESTION 125
+--From the following tables write a query in SQL to return the highest hourly wage for each job title. 
+--Restricts the titles to those that are held by men with a maximum pay rate greater than 40 dollars or women with a maximum pay rate greater than 42 dollars.
+
+SELECT e.JobTitle, MAX(h.rate) AS maximumrate
+FROM HumanResources.Employee e
+INNER JOIN HumanResources.EmployeePayHistory h
+	ON h.BusinessEntityID = e.BusinessEntityID 
+GROUP BY E.JobTitle
+HAVING MAX(CASE WHEN e.Gender = 'M'
+	THEN h.rate 
+	ELSE NULL END) > 40
+OR MAX(CASE WHEN e.gender = 'F'
+	THEN h.rate
+	ELSE NULL END) > 42;
+
+
+
+--QUESTION 126
+--From the following table write a query in SQL to sort the BusinessEntityID in descending order for those employees that have the SalariedFlag set to 'true' and in ascending order that have the SalariedFlag set to 'false'. 
+--Return BusinessEntityID, and SalariedFlag.
+
+SELECT BusinessEntityID, SalariedFlag
+FROM HumanResources.Employee
+ORDER BY 
+CASE WHEN SalariedFlag = 'true'
+	THEN BusinessEntityID END
+DESC,
+	CASE WHEN SalariedFlag = 'false'
+	THEN BusinessEntityID END;
+
+
+
+--QUESTION 127
+--From the following table write a query in SQL to display the list price as a text comment based on the price range for a product. 
+--Return ProductNumber, Name, and listprice. Sort the result set on ProductNumber in ascending order.
+
+SELECT ProductNumber, Name, ListPrice,
+
+CASE 
+	WHEN listprice = 0 THEN 'Mfg item - not for resale'
+	WHEN listprice < 50 THEN 'Under $50 '
+	WHEN listprice >=50 AND  listprice < 250 THEN 'Under $250'
+	WHEN listprice >=250 AND  listprice < 1000 THEN 'Under $1000' END AS 'Price Range'
+
+FROM Production.Product
+ORDER BY productnumber;
+
+
+
+--QUESTION 128
+--From the following table write a query in SQL to change the display of product line categories to make them more understandable. 
+--Return ProductNumber, category, and name of the product. Sort the result set in ascending order on ProductNumber.
+
+SELECT ProductNumber, 
+CASE 
+	WHEN listprice = 0 THEN 'Not for sale'
+	WHEN name LIKE '%Mountain%' THEN 'Mountain'
+	WHEN name LIKE '%Road%' THEN 'Road' END AS 'category',
+	Name
+FROM Production.Product
+ORDER BY productnumber;
+
+
+
+--QUESTION 129
+--From the following table write a query in SQL to evaluate whether the values in the MakeFlag and FinishedGoodsFlag columns are the same.
+
+SELECT ProductID, MakeFlag, FinishedGoodsFlag,
+CASE
+	WHEN MakeFlag = FinishedGoodsFlag THEN NULL
+	ELSE MakeFlag
+	END AS makeflag
+FROM Production.Product;
+
+
+
+--QUESTION 130
+--From the following table write a query in SQL to select the data from the first column that has a nonnull value. Retrun Name, Class, Color, ProductNumber, and FirstNotNull.
+
+SELECT Name, Class, Color, ProductNumber, 
+COALESCE(Class, Color, ProductNumber) AS FirstNonNullValue
+
+FROM Production.Product;
+
+
+
+--QUESTION 131
+--From the following table write a query in SQL to check the values of MakeFlag and FinishedGoodsFlag columns and return whether they are same or not. 
+--Return ProductID, MakeFlag, FinishedGoodsFlag, and the column that are null or not null.
+
+SELECT ProductID, MakeFlag, FinishedGoodsFlag, 
+CASE
+	WHEN MakeFlag <> FinishedGoodsFlag THEN 1
+	ELSE NULL END AS 'Null if  equal'
+FROM Production.Product;
+
+--OR
+
+SELECT ProductID, MakeFlag, FinishedGoodsFlag,   
+   NULLIF(MakeFlag,FinishedGoodsFlag) AS 'Null if Equal'
+FROM Production.Product;
