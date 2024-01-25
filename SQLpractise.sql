@@ -1456,3 +1456,117 @@ FROM Production.Product;
 SELECT ProductID, MakeFlag, FinishedGoodsFlag,   
    NULLIF(MakeFlag,FinishedGoodsFlag) AS 'Null if Equal'
 FROM Production.Product;
+
+
+
+--QUESTION 132
+--From the following tables write a query in SQL to return any distinct values that are returned by both the query.
+
+SELECT ProductID
+FROM Production.Product
+INTERSECT
+SELECT ProductID
+FROM production.workorder;
+
+
+
+--QUESTION 133
+--From the following tables write a query in SQL to return any distinct values from first query that aren't also found on the 2nd query.
+
+SELECT ProductID
+FROM Production.Product
+EXCEPT
+SELECT ProductID
+FROM production.workorder;
+
+
+
+--QUESTION 134
+--From the following tables write a query in SQL to fetch any distinct values from the left query that aren't also present in the query to the right.
+
+SELECT ProductID   
+FROM Production.WorkOrder  
+EXCEPT  
+SELECT ProductID   
+FROM Production.Product;
+
+
+
+--QUESTION 135
+--From the following tables write a query in SQL to fetch distinct businessentityid that are returned by both the specified query. 
+--Sort the result set by ascending order on businessentityid.
+
+SELECT businessentityid   
+FROM person.businessentity    
+INTERSECT   
+SELECT businessentityid   
+FROM person.person
+ORDER BY businessentityid;
+
+
+
+--QUESTION 136
+--From the following table write a query which is the combination of two queries. 
+--Return any distinct businessentityid from the 1st query that aren't also found in the 2nd query. 
+--Sort the result set in ascending order on businessentityid.
+
+SELECT businessentityid
+FROM Person.BusinessEntity
+EXCEPT
+SELECT businessentityid
+FROM Person.Person
+ORDER BY businessentityid;
+
+
+
+--QUESTION 137
+--From the following tables write a query in SQL to combine the ProductModelID and Name columns. 
+--A result set includes columns for productid 3 and 4. Sort the results by name ascending.
+
+SELECT ProductModelID, name
+FROM Production.ProductModel  
+UNION   
+SELECT productid, name  
+FROM Production.Product
+WHERE productid IN (3,4)
+ORDER BY name;
+
+
+
+--QUESTION 138
+--From the following table write a query in SQL to find a total number of hours away from work can be calculated by adding vacation time and sick leave. 
+--Sort results ascending by Total Hours Away.
+
+SELECT p.FirstName, p.LastName, h.VacationHours, h.SickLeaveHours, h.VacationHours + h.SickLeaveHours AS 'Total Hours Away'
+FROM HumanResources.Employee h
+INNER JOIN Person.Person p
+	ON p.BusinessEntityID = h.BusinessEntityID
+ORDER BY 'Total Hours Away';
+
+
+
+--QUESTION 139
+--From the following table write a query in SQL to calculate the tax difference between the highest and lowest tax-rate state or province.
+
+SELECT MAX(taxrate) - MIN(taxrate) AS 'Tax Rate Difference'
+FROM Sales.SalesTaxRate;
+
+
+
+--QUESTION 140
+--From the following tables write a query in SQL to calculate sales targets per month for salespeople.
+
+SELECT p.BusinessEntityID, p.FirstName, p.LastName, s.SalesQuota, s.SalesQuota/12 AS 'Sales Target Per Month'
+FROM Sales.SalesPerson s
+INNER JOIN HumanResources.Employee e 
+	ON s.BusinessEntityID = e.BusinessEntityID
+INNER JOIN Person.Person p
+	ON p.BusinessEntityID = e.BusinessEntityID;
+
+
+
+--QUESTION 141
+--From the following table write a query in SQL to return the ID number, unit price, and the modulus (remainder) of dividing product prices. Convert the modulo to an integer value.
+
+SELECT ProductID, UnitPrice, OrderQty, CAST(unitprice AS INT) % OrderQty AS modulo
+FROM  Sales.SalesOrderDetail;
