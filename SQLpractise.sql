@@ -1570,3 +1570,122 @@ INNER JOIN Person.Person p
 
 SELECT ProductID, UnitPrice, OrderQty, CAST(unitprice AS INT) % OrderQty AS modulo
 FROM  Sales.SalesOrderDetail;
+
+
+
+--QUESTION 142
+--From the following table write a query in SQL to select employees who have the title of Marketing Assistant and more than 41 vacation hours.
+
+SELECT BusinessEntityID, LoginID, JobTitle, VacationHours
+FROM HumanResources.Employee
+WHERE JobTitle = 'Marketing Assistant' AND VacationHours > 41;
+
+
+
+--QUESTION 143
+--From the following tables write a query in SQL to find all rows outside a specified range of rate between 27 and 30. Sort the result in ascending order on rate.
+
+SELECT e.FirstName, e.LastName, p.rate
+FROM HumanResources.vEmployee e
+INNER JOIN HumanResources.EmployeePayHistory p
+	ON e.BusinessEntityID = p.BusinessEntityID
+WHERE p.Rate NOT BETWEEN 27 AND 30
+ORDER BY p.Rate;
+
+
+
+--QUESTION 144
+--From the follwing table write a query in SQL to retrieve rows whose datetime values are between '20111212' and '20120105'.
+
+SELECT BusinessEntityID, RateChangeDate
+FROM HumanResources.EmployeePayHistory
+WHERE RateChangeDate BETWEEN '2011-12-12' AND '2012-01-05';
+
+
+
+--QUESTION 145
+--From the following table write a query in SQL to return TRUE even if NULL is specified in the subquery. 
+--Return DepartmentID, Name and sort the result set in ascending order.
+
+SELECT DepartmentID, Name
+FROM HumanResources.Department
+WHERE EXISTS (SELECT NULL)
+ORDER BY name;
+
+
+
+--QUESTION 146
+--From the following tables write a query in SQL to get employees with Johnson last names. Return first name and last name.
+
+SELECT FirstName, LastName
+FROM Person.Person p
+INNER JOIN HumanResources.Employee e
+	ON p.BusinessEntityID = e.BusinessEntityID
+WHERE LastName = 'Johnson';
+
+
+
+--QUESTION 147
+--From the following tables write a query in SQL to find stores whose name is the same name as a vendor.
+
+SELECT s.name
+FROM Sales.Store s
+INNER JOIN Purchasing.Vendor v
+	ON s.name = v.name;
+
+
+
+--QUESTION 148
+--From the following tables write a query in SQL to find employees of departments that start with P. Return first name, last name, job title.
+
+SELECT p.FirstName, p.LastName, h.JobTitle
+FROM Person.Person p
+INNER JOIN HumanResources.Employee h
+	ON h.BusinessEntityID = p.BusinessEntityID
+INNER JOIN HumanResources.EmployeeDepartmentHistory e
+	ON e.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Department d
+	ON d.DepartmentID = e.DepartmentID
+WHERE d.Name LIKE 'P%';
+
+
+
+--QUESTION 149
+--From the following tables write a query in SQL to find all employees that do not belong to departments whose names begin with P.
+
+SELECT p.FirstName, p.LastName, h.JobTitle
+FROM Person.Person p 
+INNER JOIN HumanResources.Employee h
+	ON h.BusinessEntityID = p.BusinessEntityID
+INNER JOIN HumanResources.EmployeeDepartmentHistory e
+	ON e.BusinessEntityID = h.BusinessEntityID
+INNER JOIN HumanResources.Department d
+	ON d.DepartmentID = e.DepartmentID
+WHERE d.Name NOT LIKE 'P%'
+ORDER BY p.LastName;
+
+
+
+--QUESTION 150
+--From the following table write a query in SQL to select employees who work as design engineers, tool designers, or marketing assistants.
+
+SELECT p.FirstName, p.LastName, h.JobTitle
+FROM Person.Person p 
+INNER JOIN HumanResources.Employee h
+	ON h.BusinessEntityID = p.BusinessEntityID
+WHERE h.JobTitle IN ('Design Engineer', 'Tool Designer', 'Marketing Assistant');
+
+
+
+--QUESTION 151
+--From the following tables write a query in SQL to identify all SalesPerson IDs for employees with sales quotas over $250,000. 
+--Return first name, last name of the sales persons.
+
+SELECT p.FirstName, p.LastName
+FROM Person.Person p 
+INNER JOIN Sales.SalesPerson s 
+	ON s.BusinessEntityID = p.BusinessEntityID
+WHERE s.SalesQuota > 250000;
+
+
+
