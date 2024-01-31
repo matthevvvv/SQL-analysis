@@ -1689,3 +1689,237 @@ WHERE s.SalesQuota > 250000;
 
 
 
+--QUESTION 152
+--From the following tables write a query in SQL to find the salespersons who do not have a quota greater than $250,000. Return first name and last name.
+
+SELECT p.firstname, p.LastName
+FROM Person.Person p
+JOIN Sales.SalesPerson s
+	ON p.BusinessEntityID = s.BusinessEntityID
+WHERE s.SalesQuota <= 250000;
+
+
+
+--QUESTION 153
+--From the following tables write a query in SQL to identify salesorderheadersalesreason and SalesReason tables with the same salesreasonid.
+
+SELECT * FROM sales.salesorderheadersalesreason  
+WHERE salesreasonid   
+IN (SELECT salesreasonid  FROM sales.SalesReason);
+
+
+
+--QUESTION 154
+--From the following table write a query in SQL to find all telephone numbers that have area code 415. 
+--Returns the first name, last name, and phonenumber. Sort the result set in ascending order by lastname.
+
+SELECT pe.FirstName, pe.LastName, ph.PhoneNumber
+FROM Person.Person pe
+INNER JOIN Person.PersonPhone ph
+	ON pe.BusinessEntityID = ph.BusinessEntityID
+WHERE ph.PhoneNumber LIKE '415%'
+ORDER BY pe.LastName;
+
+
+
+--QUESTION 155
+--From the following tables write a query in SQL to identify all people with the first name 'Gail' with area codes other than 415. 
+--Return first name, last name, telephone number. Sort the result set in ascending order on lastname.
+
+SELECT pe.FirstName, pe.LastName, ph.PhoneNumber
+FROM Person.Person pe
+INNER JOIN Person.PersonPhone ph
+	ON pe.BusinessEntityID = ph.BusinessEntityID
+WHERE ph.PhoneNumber NOT LIKE '415%' AND pe.FirstName = 'Gail'
+ORDER BY pe.LastName;
+
+
+
+--QUESTION 156
+--From the following tables write a query in SQL to find all Silver colored bicycles with a standard price under $400. Return ProductID, Name, Color, StandardCost.
+
+SELECT ProductID, name, color, StandardCost
+FROM Production.Product
+WHERE ProductNumber LIKE 'BK-%' AND color = 'Silver' AND StandardCost < 400; 
+
+
+
+--QUESTION 157
+--From the following table write a query in SQL to retrieve the names of Quality Assurance personnel working the evening or night shifts. 
+--Return first name, last name, shift.
+
+SELECT FirstName, LastName, Shift
+FROM HumanResources.vEmployeeDepartmentHistory 
+WHERE Shift NOT IN ('Day')  AND Department = 'Quality Assurance';
+
+
+
+--QUESTION 158
+--From the following table write a query in SQL to list all people with three-letter first names ending in 'an'. 
+--Sort the result set in ascending order on first name. Return first name and last name.
+
+SELECT FirstName, LastName
+FROM Person.Person
+WHERE FirstName LIKE '_an';
+
+
+
+--QUESTION 159
+--From the following table write a query in SQL to convert the order date in the 'America/Denver' time zone. 
+--Return salesorderid, order date, and orderdate_timezoneade.
+
+SELECT SalesOrderID, OrderDate, OrderDate AT TIME ZONE 'Mountain Standard Time' AS orderdate_timezoneade
+FROM Sales.SalesOrderHeader;
+
+
+
+--QUESTION 160
+--From the following table write a query in SQL to convert order date in the 'America/Denver' time zone and also convert from 'America/Denver' time zone to 'America/Chicago' time zone.
+
+SELECT SalesOrderID, OrderDate, 
+OrderDate AT TIME ZONE 'Mountain Standard Time' AS orderdate_timezoneamden , 
+OrderDate AT TIME ZONE 'Mountain Standard Time' AT TIME ZONE 'Central Standard Time' AS orderdate_timezoneamchi
+FROM Sales.SalesOrderHeader;
+
+
+
+--QUESTION 161
+--From the following table wirte a query in SQL to search for rows with the 'green_' character in the LargePhotoFileName column. Return all columns.
+
+SELECT *
+FROM Production.ProductPhoto
+WHERE ThumbnailPhotoFileName LIKE '%greena_%' ESCAPE 'a';
+
+
+
+--QUESTION 162
+--From the following tables write a query in SQL to obtain mailing addresses for companies in cities that begin with PA, outside the United States (US). 
+--Return AddressLine1, AddressLine2, City, PostalCode, CountryRegionCode.
+
+SELECT a.AddressLine1, a.AddressLine2, a.City, a.PostalCode, s.CountryRegionCode
+FROM Person.Address a
+JOIN Person.StateProvince s
+ON s.stateprovinceid = a.stateprovinceid
+WHERE a.City LIKE 'Pa%' AND s.CountryRegionCode NOT LIKE 'US';
+
+
+
+--QUESTION 163
+--From the following table write a query in SQL to specify that a JOIN clause can join multiple values. Return ProductID, product Name, and Color.
+
+SELECT ProductID, a.Name, Color  
+FROM Production.Product AS a  
+INNER JOIN (VALUES ('Blade'), ('Crown Race'), ('AWC Logo Cap')) AS b(Name)   
+ON a.Name = b.Name;
+
+
+
+--QUESTION 164
+--From the following table write a query in SQL to find the SalesPersonID, salesyear, totalsales, salesquotayear, salesquota, and amt_above_or_below_quota columns. 
+--Sort the result set in ascending order on SalesPersonID, and SalesYear columns.
+
+WITH Sales_CTE (SalesPersonID, TotalSales, SalesYear)
+AS
+(SELECT SalesPersonID, SUM(TotalDue) AS TotalSales, YEAR(OrderDate) AS SalesYear
+ FROM Sales.SalesOrderHeader
+ WHERE SalesPersonID IS NOT NULL
+ GROUP BY SalesPersonID, YEAR(OrderDate)
+),
+Sales_Quota_CTE (BusinessEntityID, SalesQuota, SalesQuotaYear)
+AS
+(
+       SELECT BusinessEntityID, SUM(SalesQuota)AS SalesQuota, YEAR(SalesYear) AS SalesQuotaYear
+       FROM Sales.SalesPersonQuotaHistory
+       GROUP BY BusinessEntityID, YEAR(SalesYear)
+)
+SELECT SalesPersonID
+  , SalesYear
+  , CAST(TotalSales as VARCHAR(10)) AS TotalSales
+  , SalesQuotaYear
+  , CAST(TotalSales as VARCHAR(10)) AS SalesQuota
+  , CAST (TotalSales -SalesQuota as VARCHAR(10)) AS Amt_Above_or_Below_Quota
+FROM Sales_CTE
+JOIN Sales_Quota_CTE ON Sales_Quota_CTE.BusinessEntityID = Sales_CTE.SalesPersonID
+                    AND Sales_CTE.SalesYear = Sales_Quota_CTE.SalesQuotaYear
+ORDER BY SalesPersonID, SalesYear;
+
+
+
+--QUESTION 165
+--From the following tables write a query in SQL to return the cross product of BusinessEntityID and Department columns.
+--The following example returns the cross product of the two tables Employee and Department in the AdventureWorks2019 database. 
+--A list of all possible combinations of BusinessEntityID rows and all Department name rows are returned.
+
+SELECT BusinessEntityID, Name
+FROM HumanResources.Employee
+CROSS JOIN HumanResources.Department
+ORDER BY BusinessEntityID, Name;
+
+
+
+--QUESTION 166
+--From the following tables write a query in SQL to return the SalesOrderNumber, ProductKey, and EnglishProductName columns.
+
+SELECT s.SalesOrderID, p.ProductID, p.name 
+FROM Sales.SalesOrderDetail s
+JOIN Production.Product p
+	ON s.ProductID = p.ProductID;
+
+
+
+--QUESTION 167
+--From the following tables write a query in SQL to return all orders with IDs greater than 60000.
+
+SELECT S.SalesOrderID, s.ProductID, p.name
+FROM Sales.SalesOrderDetail s
+JOIN Production.Product p
+	ON s.ProductID = p.ProductID
+WHERE salesorderid > 60000
+ORDER BY SalesOrderID;
+
+
+
+--QUESTION 168
+--From the following tables write a query in SQL to retrieve the SalesOrderid. A NULL is returned if no orders exist for a particular Territoryid. 
+--Return territoryid, countryregioncode, and salesorderid. Results are sorted by SalesOrderid, so that NULLs appear at the top.
+
+SELECT st.territoryid, st.countryregioncode, so.SalesOrderID
+FROM sales.salesterritory st
+LEFT OUTER JOIN sales.salesorderheader so
+	ON  st.territoryid = so.territoryid;
+
+
+
+--QUESTION 169
+--From the following table write a query in SQL to return all rows from both joined tables but returns NULL for values that do not match from the other table. 
+--Return territoryid, countryregioncode, and salesorderid. Results are sorted by SalesOrderid.
+
+SELECT st.territoryid, st.countryregioncode, so.SalesOrderID
+FROM sales.salesterritory st
+FULL OUTER JOIN sales.salesorderheader so
+	ON  st.territoryid = so.territoryid;
+
+
+
+--QUESTION 170
+--From the following tables write a query in SQL to return a cross-product. Order the result set by SalesOrderid.
+
+SELECT st.territoryid, so.SalesOrderID
+FROM sales.salesterritory st
+CROSS JOIN sales.salesorderheader so
+ORDER BY so.SalesOrderID;
+
+
+
+--QUESTION 171
+--From the following table write a query in SQL to return all customers with BirthDate values after January 1, 1970 and the last name 'Smith'. 
+--Return businessentityid, jobtitle, and birthdate. Sort the result set in ascending order on birthday.
+
+SELECT e.BusinessEntityID, e.JobTitle, e.BirthDate
+FROM HumanResources.Employee e
+JOIN Person.Person p
+	ON e.BusinessEntityID = p.BusinessEntityID
+WHERE BirthDate > '1970-01-01' AND p.LastName = 'Smith'
+ORDER BY BirthDate ASC;
+
+
